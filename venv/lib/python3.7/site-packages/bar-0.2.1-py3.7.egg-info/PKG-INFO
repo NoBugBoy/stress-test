@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: bar
+Version: 0.2.1
+Summary: Configurable progress bars/status monitors for Python console applications.
+Home-page: https://github.com/utdemir/bar
+Author: Utku Demir
+Author-email: utdemir@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Environment :: Other Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

@@ -1,0 +1,6 @@
+bar.py
+setup.py
+bar.egg-info/PKG-INFO
+bar.egg-info/SOURCES.txt
+bar.egg-info/dependency_links.txt
+bar.egg-info/top_level.txt
