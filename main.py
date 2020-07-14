@@ -1,58 +1,57 @@
-import model.SyncRequest as sync
-import model.PrintPlt as plt
+import model.SyncCore as sc
+import model.Utils as util
+import model.Logging as log
+import model.ReadDatas as data
 import time
 import sys
 
-syncPool = []
+
+def check_param(threadCount, requestUrl, methods, params):
+    if threadCount <= 0:
+        log.logger.error("请求数量不能小于 0 ")
+        exit(0)
+    if str(methods).lower() != 'get' and str(methods).lower() != 'post':
+        log.logger.error("请求方法错误")
+        exit(0)
+    if util.check_url(requestUrl) is False:
+        log.logger.error("请求地址格式错误")
+        exit(0)
+    if util.check_json(params) is False:
+        log.logger.error("JSON格式错误")
+        exit(0)
 
 
-def init(count, url, methods='GET', params='{}'):
-    print('开始预创建请求池....')
-    for requestId in range(count):
-        request = sync.SyncRequestTask(requestId, url, methods, params)
-        syncPool.append(request)
-
-
-def run():
-    for request in syncPool:
-        request.start()
-
-
-def join():
-    for request in syncPool:
-        request.join()
-
-
-def out():
-    print(f"success count = {len(sync.success)} ")
-    print(f"fail count = {len(sync.fail)} ")
-    for success in sync.success:
-        print(success.content)
-    for fail in sync.fail:
-        print(fail.status_code)
-
-
-# python3 main.py 50 POST http://101.200.212.244/trade/api/artTopic/list/2
-
+# python3 main.py 50 POST http://101.200.212.244/trade/api/artTopic/list/3
 if __name__ == '__main__':
-    thread_count = 50
+    # http://nuhx0mrq.xiaomy.net/gateway/trade/api/art/preBuy
+    # http://nuhx0mrq.xiaomy.net/gateway/trade/api/art/buy
+
+    thread_count = 10
     method = 'POST'
     param = '{}'
-    request_url = 'http://101.200.212.244/trade/api/artTopic/list/2'
+    # request_url = 'http://101.200.212.244/gateway/trade/api/artTopic/list/3'
+    # # 多少秒执行完成 0代表并发
+    slowTime = 0
+    url = ''
+    # # 循环执行次数
+    roundCount = 1
+    # # 是否从文件读取数据
+    read = False
+
     if len(sys.argv) > 3:
         thread_count = int(sys.argv[1])
         method = str(sys.argv[2])
         request_url = str(sys.argv[3])
+        if len(sys.argv) > 4:
+            url = str(sys.argv[4])
     else:
-        print('参数错误')
+        print('参数数量错误')
         exit(1)
+    # load数据
 
-    init_start_time = time.time()
-    init(thread_count, request_url, method, param)
-    print("初始化消耗时间 {} ms".format(time.time() - init_start_time))
-    run_start_time = time.time()
-    run()
-    print("请求消耗时间 {} ms".format(time.time() - run_start_time))
-    join()
-    out()
-    plt.show()
+    startTime = time.time()
+    if len(url) > 0:
+        data.loadRequestData(url)
+        log.logger.info("读取数据消耗时间{}毫秒".format((time.time() - startTime) * 1000))
+        check_param(thread_count - 1, request_url, method, param)
+    sc.start(slowTime, roundCount, thread_count, request_url, method, param, read)

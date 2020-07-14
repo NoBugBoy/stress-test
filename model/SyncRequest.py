@@ -3,12 +3,9 @@ import time
 import json
 import requests
 from threading import Lock
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-}
+import model.Logging as log
+sessions = requests.sessions
+sessions.HTTPAdapter.max_retries = 5
 lock = Lock()
 success = []
 fail = []
@@ -18,20 +15,21 @@ ids = []
 
 
 def data_build(id, ms):
-    print('ID {} 响应 {} ms'.format(id, ms))
+    log.logger.info('ID {} 响应 {:.2f} 毫秒'.format(id, ms * 1000))
     ids.append(id)
-    response_time.append(ms)
+    response_time.append(ms * 1000)
 
 
 class SyncRequestTask(threading.Thread):
 
-    def __init__(self, threadId, url, method, params, timeout=3600):
+    def __init__(self, threadId, url, method, params, header, timeout=10, verify=True):
         threading.Thread.__init__(self)
-        self.id = threadId
+        self.setName(f"sync-{threadId}")
         self.url = url
         self.method = method
         self.params = params
         self.timeout = timeout
+        self.header = header
 
     # 发送请求
     def request(self):
@@ -44,16 +42,25 @@ class SyncRequestTask(threading.Thread):
                 req = self.doPost()
                 self.add(req)
         except Exception as e:
-            fail.append(req)
             print(e)
+            fail.append(req)
 
     def doGet(self):
-        req = requests.get(self.url, headers=headers, timeout=self.timeout)
+        startTime = time.time()
+
+        s = sessions.session()
+        req = s.get(self.url, headers=self.header, timeout=self.timeout)
+        data_build(self.getName(), time.time() - startTime)
+        req.close()
         return req
 
     def doPost(self):
-        request_body = json.dumps(self.params)
-        req = requests.post(self.url, json=request_body, headers=headers, timeout=self.timeout)
+        # request_body = json.dumps(self.params)
+        s = sessions.session()
+        startTime = time.time()
+        req = s.post(self.url, json=self.params, headers=self.header, timeout=self.timeout)
+        data_build(self.getName(), time.time() - startTime)
+        req.close()
         return req
 
     @staticmethod
@@ -70,8 +77,5 @@ class SyncRequestTask(threading.Thread):
         lock.release()
 
     def run(self):
-        startTime = time.time()
         # 开始发送请求
         self.request()
-        # 传递参数，构建图标
-        data_build(self.id, time.time() - startTime)
