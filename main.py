@@ -27,7 +27,7 @@ if __name__ == '__main__':
     thread_count = 500
     method = 'POST'
     param = '{}'
-    request_url = 'http://101.200.212.244/gateway/trade/api/art/preBuy'
+    request_url = 'http://xxxxxx'
     # # 多少秒执行完成 0代表并发
     slowTime = 0
     # url = ''
