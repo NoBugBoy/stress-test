@@ -22,7 +22,7 @@ def data_build(id, ms):
 
 class SyncRequestTask(threading.Thread):
 
-    def __init__(self, threadId, url, method, params, header, timeout=10, verify=True):
+    def __init__(self, threadId, url, method, params, header, timeout=10):
         threading.Thread.__init__(self)
         self.setName(f"sync-{threadId}")
         self.url = url
@@ -58,7 +58,7 @@ class SyncRequestTask(threading.Thread):
         # request_body = json.dumps(self.params)
         s = sessions.session()
         startTime = time.time()
-        req = s.post(self.url, json=self.params, headers=self.header, timeout=self.timeout)
+        req = s.post(self.url, data=self.params, headers=self.header, timeout=self.timeout)
         data_build(self.getName(), time.time() - startTime)
         req.close()
         return req

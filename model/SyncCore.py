@@ -24,13 +24,12 @@ def init(count, url, methods='GET', params='{}', read=False):
     log.logger.info('开始预创建请求池....')
     if read:
         for requestId in range(count):
-            dataList = data.request_data[requestId]
-            if utils.check_json(str(dataList[0]).replace("'", "")):
-                params = json.loads(str(dataList[0]).replace("'", ""))
-            else:
-                log.logger.error('json数据格式错误 跳过构建该请求')
-                continue
-            headers['openkey'] = dataList[1]
+            # dataList = data.request_data[requestId]
+            # if utils.check_json(str(dataList[0]).replace("'", "")):
+            #     params = json.loads(str(dataList[0]).replace("'", ""))
+            # else:
+            #     log.logger.error('json数据格式错误 跳过构建该请求')
+            #     continue
             request = sync.SyncRequestTask(requestId, url, methods, params, headers)
             syncPool.append(request)
     else:
@@ -81,11 +80,13 @@ def out(length):
     log.logger.warning("最长请求时间 {:.2f} 毫秒".format(max(sync.response_time)))
     log.logger.warning("最短请求时间 {:.2f} 毫秒".format(min(sync.response_time)))
     log.logger.warning("平均请求时间 {:.2f} 毫秒".format(sum(sync.response_time) / len(sync.response_time)))
-    # for success in sync.success:
-    #     log.logger.debug(success.content)
-    # for fail in sync.fail:
-    #     if fail is not None:
-    #         log.logger.debug(fail.content)
+    # 打印成功请求的request中信息
+    for success in sync.success:
+        log.logger.debug(success.content)
+    # 打印失败请求的request中信息
+    for fail in sync.fail:
+        if fail is not None:
+            log.logger.debug(fail.content)
 
 
 def switch_start(flag, slowTime, id):
